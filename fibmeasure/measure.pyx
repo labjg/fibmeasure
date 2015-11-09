@@ -599,7 +599,7 @@ cdef class FibreImage:
         self.px_nZero = self.px_hist[0]
         self.px_nSat  = self.px_hist[self.maxVal]
 
-        cdef unsigned int k
+        cdef int k
         for k in range(1,self.maxVal+1,1):
             if self.px_hist[k] > 0:
                 self.px_valLo = k
