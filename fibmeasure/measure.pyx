@@ -97,6 +97,9 @@ def setup(fibreDia, saveDir="fibmeasure_setup_data/", setup_xcorr=False,
 
     if setup_biscuit == True:
 
+        arraySize = (2 * int(fibreDia)) + 1
+        arrayCtr = (arraySize/2.0, arraySize/2.0)
+
         global bisc_fibreDia
         global bisc_nth
         global bisc_fullMask
