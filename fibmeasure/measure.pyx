@@ -163,6 +163,7 @@ cdef class FibreImage:
     cdef public:
         unsigned char[:,::1] im_raw
         double[:] refPoint
+        int px_thresh_override
         unsigned char nBits, maxVal
         unsigned int[:] cropCentre
         unsigned char[:,::1] im_cropped
@@ -174,7 +175,8 @@ cdef class FibreImage:
         unsigned char px_valMin, px_valMax, px_valLo, px_valHi
         unsigned char px_mode, px_ptile, px_thresh
 
-    def __cinit__(self, unsigned char[:,::1] imar, double[:] refPoint):
+    def __cinit__(self, unsigned char[:,::1] imar, double[:] refPoint,
+                  int px_thresh_override=-1):
         """FibreImage instances are each based on a single input image. The
         instance can then have various routines (inc. different centre-finding
         techniques) performed on it, and can be destroyed when you're done.
@@ -188,6 +190,10 @@ cdef class FibreImage:
                       measurement results, in [x,y] coords; also used when
                       excluding multiple fibres, as the fibre closest to this
                       point will be treated as the main fibre in the image
+            px_thresh_override: The pixel value taken as the zero-threshold
+                                for centroiding etc. Setting a negative value
+                                will mean this is calculated automatically,
+                                based on image stats
         """
         if ((refPoint[0] < 0) or (refPoint[0] > imar.shape[1])
                 or (refPoint[1] < 0) or (refPoint[1] > imar.shape[0])):
@@ -195,8 +201,12 @@ cdef class FibreImage:
 
         self.im_raw = imar
         self.refPoint = refPoint
+        self.px_thresh_override = px_thresh_override
         self.nBits = 8
         self.maxVal = 2**self.nBits - 1
+
+        if (self.px_thresh_override > self.maxVal):
+            raise FibreImageError("Threshold value exceeds pixel value range")
 
     cpdef get_centre_centroid(self, float fibreDia,
                               unsigned int coarseSample=4,
@@ -515,6 +525,10 @@ cdef class FibreImage:
             Sweet Fanny Adams.
         """
         self.get_stats(sampleStep=coarseSample, fibreDia=fibreDia)
+
+        # Manually override the calculated threshold value if valid:
+        if (self.px_thresh_override >= 0):
+            self.px_thresh = self.px_thresh_override
 
         # Check signal wrt background (mode) and reject if <10% full scale:
         cdef unsigned char minSignal = <unsigned char>(self.maxVal * 0.1)
