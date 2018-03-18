@@ -593,9 +593,9 @@ cdef class FibreImage:
                                # on the percentile of pixels for the fibre size
         self.px_thresh = 0  # The calculated best pixel value to use as a
                                # threshold for centroid calculations etc.
-        self.im_proj_x = np.zeros(ceil(self.im_raw.shape[1]/sampleStep),
+        self.im_proj_x = np.zeros(int(ceil(self.im_raw.shape[1]/sampleStep)),
                                   dtype='uint32')
-        self.im_proj_y = np.zeros(ceil(self.im_raw.shape[0]/sampleStep),
+        self.im_proj_y = np.zeros(int(ceil(self.im_raw.shape[0]/sampleStep)),
                                   dtype='uint32')
 
         # Slice through the image, adding the values to the histogram and
